@@ -31,21 +31,43 @@ app.listen(3000, function () {
 
     // make request
     var options = {
-      url: 'https://api.twitch.tv/kraken/users?login=a_seagull',
+      url: 'https://api.twitch.tv/helix/users?login=a_seagull',
       method: 'GET',
       headers: {
         'Client-ID': TWITCH_CLIENT_ID,
-        'Accept': 'application/vnd.twitchtv.v5+json'
+        'Authorization' : 'Bearer kkyp6rlv9f305rktev6kbgkps0ysxw'
       }
     };
-  
+
     request(options, function (error, response, body) {
       if (response && response.statusCode == 200) {
-        console.log(JSON.parse(body));
+        console.log("first request successful")
+        j = JSON.parse(body)
+        uid = j.data[0].id
+        var options = {
+          url: 'https://api.twitch.tv/helix/webhooks/hub',
+          method: 'POST',
+          headers: {
+            'Client-ID': TWITCH_CLIENT_ID,
+            'Content-Type': 'application/json',
+          },
+          body: `{"hub.mode":"subscribe",
+"hub.topic":"https://api.twitch.tv/helix/streams?user_id=19070311",
+"hub.callback":"http://localhost"
+}`,
+        };
+
+        request(options, function (error, response, body) {
+          if (response && response.statusCode == 202) {
+            console.log("request webhooks setup successful");
+          } else {
+            console.log("request webhooks setup unsuccessful");
+          }
+        });
       } else {
+        console.log("first request unsuccessful");
         console.log(JSON.parse(body));
       }
     });
   });
 });
-
